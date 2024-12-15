@@ -47,8 +47,8 @@ classifiers = [
 ]
 license = "BSD-3-Clause"
 readme = "README.md"
-homepage = "https://github.com/Opus10/django-pgclone"
-repository = "https://github.com/Opus10/django-pgclone"
+homepage = "https://github.com/AmbitionEng/django-pgclone"
+repository = "https://github.com/AmbitionEng/django-pgclone"
 documentation = "https://django-pgclone.readthedocs.io"
 
 [tool.poetry.dependencies]
