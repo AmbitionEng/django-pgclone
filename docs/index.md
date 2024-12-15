@@ -1,6 +1,6 @@
 # django-pgclone
 
-Welcome to the docs for `django-pgclone`! It doesn't appear that the author has created any docs for their project yet. Try viewing the [README](https://github.com/Opus10/django-pgclone) of their project for documentation.
+Welcome to the docs for `django-pgclone`! It doesn't appear that the author has created any docs for their project yet. Try viewing the [README](https://github.com/AmbitionEng/django-pgclone) of their project for documentation.
 
 ## Compatibility
 

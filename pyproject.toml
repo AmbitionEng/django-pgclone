@@ -29,7 +29,7 @@ exclude = [
 ]
 version = "0.0.0"
 description = "Dump and restore Postgres databases with Django."
-authors = ["Opus 10 Engineering"]
+authors = ["Ambition Engineering"]
 classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
@@ -47,8 +47,8 @@ classifiers = [
 ]
 license = "BSD-3-Clause"
 readme = "README.md"
-homepage = "https://github.com/Opus10/django-pgclone"
-repository = "https://github.com/Opus10/django-pgclone"
+homepage = "https://github.com/AmbitionEng/django-pgclone"
+repository = "https://github.com/AmbitionEng/django-pgclone"
 documentation = "https://django-pgclone.readthedocs.io"
 
 [tool.poetry.dependencies]
