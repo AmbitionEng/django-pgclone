@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.6.1 (2024-12-15)
+
+#### Changes
+
+  - Changed project ownership to `AmbitionEng` by [@wesleykendall](https://github.com/wesleykendall) in [#36](https://github.com/AmbitionEng/django-pgclone/pull/36).
+
 ## 3.6.0 (2024-11-01)
 
 #### Changes
