@@ -55,7 +55,7 @@ class _Storage(abc.ABC):
 
 
 class S3(_Storage):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, storage_location: str):
         validate_s3_support()
         self.s3_endpoint_url = (
             f" --endpoint-url {settings.s3_endpoint_url()}"
@@ -63,7 +63,7 @@ class S3(_Storage):
             and isinstance(settings.s3_endpoint_url(), str)
             else ""
         )
-        super().__init__(*args, **kwargs)
+        super().__init__(storage_location)
 
     def ls(self, prefix: str | None = None) -> list[str]:  # pragma: no cover
         s3_path = os.path.join(self.storage_location, prefix or "")
