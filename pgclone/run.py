@@ -29,7 +29,7 @@ def shell(
         stdout=subprocess.PIPE,
         env=dict(os.environ, **{k: v for k, v in env.items() if v is not None}),
     )
-    readline = process.stdout.readline if process.stdout else (lambda: b"")
+    readline = process.stdout.readline if process.stdout else (lambda: b"")  # pragma: no branch
     for line in iter(readline, b""):
         logger.info(line.decode("utf-8").rstrip())
     process.wait()
