@@ -29,7 +29,7 @@ def shell(
         stdout=subprocess.PIPE,
         env=dict(os.environ, **{k: v for k, v in env.items() if v is not None}),
     )
-    if process.stdout is None:
+    if process.stdout is None:  # pragma: no cover
         raise exceptions.RuntimeError(f"No stdout when running: {cmd}")
     for line in iter(process.stdout.readline, b""):
         logger.info(line.decode("utf-8").rstrip())

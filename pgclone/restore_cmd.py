@@ -31,7 +31,7 @@ def _set_search_path(database: dict[str, Any], *, using: str) -> None:
         cursor.execute("SHOW search_path;")
         search_path = cursor.fetchone()
         if search_path is None:
-            raise exceptions.RuntimeError("Couldn't get fetch search path")
+            raise AssertionError
         search_path = search_path[0]
 
     set_search_path_sql = f'ALTER DATABASE "{database["NAME"]}" SET search_path to {search_path}'
