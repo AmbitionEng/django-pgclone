@@ -49,13 +49,13 @@ def management(
     **cmd_kwargs: Any,
 ) -> None:
     logger = logging.get_logger()
-    _cmd_args = cmd_args or []
+    cmd_args = cmd_args or ()
     cmd_kwargs = cmd_kwargs or {}
     output = io.StringIO()
     try:
         with contextlib.redirect_stderr(output):
             with contextlib.redirect_stdout(output):
-                call_command(cmd, *_cmd_args, **cmd_kwargs)
+                call_command(cmd, *cmd_args, **cmd_kwargs)
     except Exception:  # pragma: no cover
         # If an exception happened, be sure to print off any stdout/stderr
         # leading up the error and log the exception.
