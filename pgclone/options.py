@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TypedDict, TypeVar
-
-from typing_extensions import Unpack
+from typing import TYPE_CHECKING, TypedDict, TypeVar
 
 from pgclone import exceptions, settings
+
+if TYPE_CHECKING:
+    from typing_extensions import Unpack
 
 _T = TypeVar("_T")
 
@@ -26,7 +27,7 @@ class _PGCloneOptions(TypedDict, total=False):
 
 
 class _Options:
-    def __init__(self, **pgclone_options: Unpack[_PGCloneOptions]) -> None:
+    def __init__(self, **pgclone_options: "Unpack[_PGCloneOptions]") -> None:
         """Parse options for pgclone commands
 
         Options follow the hierarchy of:
@@ -93,5 +94,5 @@ class _Options:
         self.config = config
 
 
-def get(**kwargs: Unpack[_PGCloneOptions]) -> _Options:
+def get(**kwargs: "Unpack[_PGCloneOptions]") -> _Options:
     return _Options(**kwargs)
