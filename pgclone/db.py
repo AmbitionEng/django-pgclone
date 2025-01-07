@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import copy
 import functools
@@ -5,6 +7,8 @@ import shlex
 import tempfile
 import textwrap
 import urllib.parse
+from collections.abc import Generator
+from typing import Any
 
 from django.conf import settings as django_settings
 from django.db import DEFAULT_DB_ALIAS, connections
@@ -19,7 +23,7 @@ def _no_queries_during_routing(execute, sql, params, many, context):  # pragma: 
 
 
 @contextlib.contextmanager
-def route(destination):
+def route(destination: dict[str, Any]) -> Generator[None]:
     """
     Route all connections to another database.
 
@@ -46,7 +50,7 @@ def route(destination):
             connections[DEFAULT_DB_ALIAS] = default_connection
 
 
-def conf(*, using):
+def conf(*, using: str) -> dict[str, Any]:
     """Obtain a copy of a database configuration"""
     if using not in django_settings.DATABASES:  # pragma: no cover
         raise exceptions.ValueError(
@@ -74,7 +78,7 @@ def conf(*, using):
     return database
 
 
-def make(db_name, *, using, check=True):
+def make(db_name: str, *, using: str, check: bool = True) -> dict[str, Any]:
     """Returns a DB config dict for the database named "db_name"
 
     Also ensures that no other database are configured with the provided
@@ -99,12 +103,12 @@ def make(db_name, *, using, check=True):
 
 
 @functools.lru_cache()
-def conn(*, using):
+def conn(*, using: str) -> dict[str, Any]:
     """Return the database used when making connections to psql"""
     return make(settings.conn_db(), using=using)
 
 
-def url(db_config):
+def url(db_config: dict[str, Any]) -> str:
     """Convert a database dictionary config to a url"""
     user = urllib.parse.quote(db_config["USER"])
     password = urllib.parse.quote(db_config["PASSWORD"])
@@ -114,7 +118,7 @@ def url(db_config):
     return shlex.quote(f"postgresql://{user}:{password}@{host}:{port}/{name}")
 
 
-def _fmt_psql_sql(sql):
+def _fmt_psql_sql(sql: str) -> str:
     """Formats SQL for psql execution"""
     sql = textwrap.dedent(sql).strip()
     if not sql.endswith(";"):  # For better debugging output
@@ -129,7 +133,7 @@ def _fmt_psql_sql(sql):
     return sql
 
 
-def _kill_connections(database, *, using):
+def _kill_connections(database: dict[str, Any], *, using: str) -> None:
     kill_connections_sql = f"""
         SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity
             WHERE pg_stat_activity.datname = '{database["NAME"]}' AND pid <> pg_backend_pid()
@@ -137,7 +141,13 @@ def _kill_connections(database, *, using):
     psql(kill_connections_sql, using=using)
 
 
-def psql(sql, *, using, ignore_errors=False, kill_connections=None):
+def psql(
+    sql: str,
+    *,
+    using: str,
+    ignore_errors: bool = False,
+    kill_connections: dict[str, Any] | None = None,
+):
     """Runs psql -f with properly formatted SQL.
 
     Ensures PGCLONE_STATEMENT_TIMEOUT and PGCLONE_LOCK_TIMEOUT are set
@@ -163,7 +173,7 @@ def psql(sql, *, using, ignore_errors=False, kill_connections=None):
         )
 
 
-def drop(database, *, using):
+def drop(database: dict[str, Any], *, using: str) -> None:
     _kill_connections(database, using=using)
     drop_sql = f'DROP DATABASE IF EXISTS "{database["NAME"]}"'
     psql(drop_sql, using=using)

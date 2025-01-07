@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import re
 import subprocess
-from typing import List, Union
+from typing import Any
 
 from pgclone import db, exceptions, options, settings, storage
 
 
-def _is_valid_dump_key(dump_key):
+def _is_valid_dump_key(dump_key: str) -> bool:
     """
     True if the `dump_key` is in the valid format of
     "database_name/timestamp.dump"
@@ -14,10 +16,10 @@ def _is_valid_dump_key(dump_key):
         r"^[\w-]+/[\w-]+/[\w-]+/\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d+\.dump$",
         dump_key,
     )
-    return regexmatch if settings.validate_dump_keys() else True
+    return bool(regexmatch) if settings.validate_dump_keys() else True
 
 
-def _parse_dump_key(dump_key):
+def _parse_dump_key(dump_key: str) -> dict[str, Any] | None:
     regexmatch = re.match(
         r"^(?P<instance>[\w-]+)/(?P<database>[\w-]+)/(?P<config>[\w-]+)/"
         r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d+\.dump$",
@@ -26,7 +28,17 @@ def _parse_dump_key(dump_key):
     return regexmatch.groupdict() if regexmatch else None
 
 
-def _ls(*, dump_key, instances, databases, configs, local, database, storage_location, config):
+def _ls(
+    *,
+    dump_key: str | None,
+    instances: bool,
+    databases: bool,
+    configs: bool,
+    local: bool,
+    database: str | None,
+    storage_location: str,
+    config: str | None,
+) -> list[str]:
     """
     Ls implementation
     """
@@ -63,16 +75,16 @@ def _ls(*, dump_key, instances, databases, configs, local, database, storage_loc
 
 
 def ls(
-    dump_key: Union[str, None] = None,
+    dump_key: str | None = None,
     *,
     instances: bool = False,
     databases: bool = False,
     configs: bool = False,
     local: bool = False,
-    database: Union[str, None] = None,
-    storage_location: Union[str, None] = None,
-    config: Union[str, None] = None,
-) -> List[str]:
+    database: str | None = None,
+    storage_location: str | None = None,
+    config: str | None = None,
+) -> list[str]:
     """
     Lists dump keys.
 

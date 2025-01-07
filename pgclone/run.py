@@ -1,14 +1,21 @@
+from __future__ import annotations
+
 import contextlib
 import io
 import os
 import subprocess
+from typing import Any
 
 from django.core.management import call_command
 
 from pgclone import exceptions, logging
 
 
-def shell(cmd, ignore_errors=False, env=None):
+def shell(
+    cmd: str,
+    ignore_errors: bool = False,
+    env: dict[str, Any] | None = None,
+) -> subprocess.Popen:
     """
     Utility for running a command. Ensures that an error
     is raised if it fails.
@@ -22,7 +29,8 @@ def shell(cmd, ignore_errors=False, env=None):
         stdout=subprocess.PIPE,
         env=dict(os.environ, **{k: v for k, v in env.items() if v is not None}),
     )
-    for line in iter(process.stdout.readline, b""):
+    readline = process.stdout.readline if process.stdout else (lambda: b"")  # pragma: no branch
+    for line in iter(readline, b""):
         logger.info(line.decode("utf-8").rstrip())
     process.wait()
 
@@ -34,9 +42,13 @@ def shell(cmd, ignore_errors=False, env=None):
     return process
 
 
-def management(cmd, *cmd_args, **cmd_kwargs):
+def management(
+    cmd: str,
+    *cmd_args: Any,
+    **cmd_kwargs: Any,
+) -> None:
     logger = logging.get_logger()
-    cmd_args = cmd_args or []
+    cmd_args = cmd_args or ()
     cmd_kwargs = cmd_kwargs or {}
     output = io.StringIO()
     try:

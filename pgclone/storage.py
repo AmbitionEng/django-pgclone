@@ -1,11 +1,15 @@
+from __future__ import annotations
+
+import abc
 import os
 import pathlib
 import subprocess
+from typing import Any
 
 from pgclone import exceptions, settings
 
 
-def validate_s3_support():  # pragma: no cover
+def validate_s3_support() -> None:  # pragma: no cover
     """Verify that pgclone has been installed with the S3 extras"""
     which_aws = subprocess.run(
         "which aws", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -18,33 +22,40 @@ def validate_s3_support():  # pragma: no cover
         )
 
 
-class Storage:
-    def __init__(self, storage_location):
+class _Storage(abc.ABC):
+    def __init__(self, storage_location: str) -> None:
         # Ensure the storage location always has a slash appended
         self.storage_location = os.path.join(storage_location, "")
         self.env = self.get_env()
 
-    def get_env(self):
+    def get_env(self) -> dict[str, Any]:
         return {}
 
-    def dump_key(self, path):
+    def dump_key(self, path: str) -> str:
         """
         Given an absolute path, return the relative path (i.e. the dump key)
         """
         prefix_len = len(self.storage_location)
         return path[prefix_len:]
 
-    def pg_dump(self, file_path):
+    @abc.abstractmethod
+    def pg_dump(self, file_path: str) -> str:
         """Given a file path, generates the CLI fragment to append to pg_dump"""
         pass
 
-    def pg_restore(self, file_path):
+    @abc.abstractmethod
+    def pg_restore(self, file_path: str) -> str:
         """Given a file path, generates the CLI fragment to prepend to pg_restore"""
         pass
 
+    @abc.abstractmethod
+    def ls(self, prefix: str | None = None) -> list[str]:
+        """Given a prefix, returns a list of dump keys"""
+        pass
 
-class S3(Storage):
-    def __init__(self, *args, **kwargs):
+
+class S3(_Storage):
+    def __init__(self, storage_location: str):
         validate_s3_support()
         self.s3_endpoint_url = (
             f" --endpoint-url {settings.s3_endpoint_url()}"
@@ -52,9 +63,9 @@ class S3(Storage):
             and isinstance(settings.s3_endpoint_url(), str)
             else ""
         )
-        super().__init__(*args, **kwargs)
+        super().__init__(storage_location)
 
-    def ls(self, prefix=None):  # pragma: no cover
+    def ls(self, prefix: str | None = None) -> list[str]:  # pragma: no cover
         s3_path = os.path.join(self.storage_location, prefix or "")
         s3_bucket = "s3://" + s3_path[5:].split("/", 1)[0]
         cmd = f"aws s3 ls {s3_path}{self.s3_endpoint_url} --recursive | cut -c32-"
@@ -71,15 +82,15 @@ class S3(Storage):
     def get_env(self):
         return settings.s3_config()
 
-    def pg_dump(self, file_path):
+    def pg_dump(self, file_path: str) -> str:
         return f"| aws s3 cp - {file_path}{self.s3_endpoint_url}"
 
-    def pg_restore(self, file_path):
+    def pg_restore(self, file_path: str) -> str:
         return f"aws s3 cp {file_path} -{self.s3_endpoint_url} |"
 
 
-class Local(Storage):
-    def ls(self, prefix=None):
+class Local(_Storage):
+    def ls(self, prefix: str | None = None) -> list[str]:
         abs_paths = [
             os.path.join(dirpath, file_name)
             for dirpath, _, file_names in os.walk(self.storage_location)
@@ -92,15 +103,15 @@ class Local(Storage):
 
         return dump_keys
 
-    def pg_dump(self, file_path):
+    def pg_dump(self, file_path: str) -> str:
         pathlib.Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         return f"> {file_path}"
 
-    def pg_restore(self, file_path):
+    def pg_restore(self, file_path: str) -> str:
         return f"cat {file_path} |"
 
 
-def client(storage_location):
+def client(storage_location: str) -> _Storage:
     if storage_location.startswith("s3://"):  # pragma: no cover
         return S3(storage_location)
     else:
