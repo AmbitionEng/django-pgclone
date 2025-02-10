@@ -1,26 +1,33 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, TypedDict, TypeVar
+
 from pgclone import exceptions, settings
 
+if TYPE_CHECKING:
+    from typing_extensions import Unpack
 
-def _first_non_none(*values):
-    for value in values:  # pragma: no branch
-        if value is not None:
-            return value
+_T = TypeVar("_T")
+
+
+def _first_non_none(*values: _T | None) -> _T | None:
+    return next((value for value in values if value is not None), None)
+
+
+class _PGCloneOptions(TypedDict, total=False):
+    config: str | None
+    dump_key: str | None
+    reversible: bool | None
+    exclude: list[str] | None
+    pre_dump_hooks: list[str] | None
+    pre_swap_hooks: list[str] | None
+    instance: str | None
+    database: str | None
+    storage_location: str | None
 
 
 class _Options:
-    def __init__(
-        self,
-        *,
-        config=None,
-        dump_key=None,
-        reversible=None,
-        exclude=None,
-        pre_swap_hooks=None,
-        pre_dump_hooks=None,
-        instance=None,
-        database=None,
-        storage_location=None,
-    ):
+    def __init__(self, **pgclone_options: "Unpack[_PGCloneOptions]") -> None:
         """Parse options for pgclone commands
 
         Options follow the hierarchy of:
@@ -29,6 +36,12 @@ class _Options:
         2. Any configurations override settings
         3. Any direct parameters override configurations
         """
+        config = pgclone_options.get("config")
+        reversible = pgclone_options.get("reversible")
+        exclude = pgclone_options.get("exclude")
+        pre_dump_hooks = pgclone_options.get("pre_dump_hooks")
+        pre_swap_hooks = pgclone_options.get("pre_swap_hooks")
+
         if config and config not in settings.configs():
             raise exceptions.ValueError(
                 f'"{config}" is not a valid configuration in settings.PGCLONE_CONFIGS.'
@@ -47,11 +60,17 @@ class _Options:
             config = "none"
 
         # Generate options based on hierarchy
-        self.dump_key = dump_key or config_opts.get("dump_key")
-        self.instance = instance or config_opts.get("instance") or settings.instance()
-        self.database = database or config_opts.get("database") or settings.database()
+        self.dump_key = pgclone_options.get("dump_key") or config_opts.get("dump_key")
+        self.instance = (
+            pgclone_options.get("instance") or config_opts.get("instance") or settings.instance()
+        )
+        self.database = (
+            pgclone_options.get("database") or config_opts.get("database") or settings.database()
+        )
         self.storage_location = (
-            storage_location or config_opts.get("storage_location") or settings.storage_location()
+            pgclone_options.get("storage_location")
+            or config_opts.get("storage_location")
+            or settings.storage_location()
         )
         self.reversible = (
             _first_non_none(reversible, config_opts.get("reversible"), settings.reversible())
@@ -75,5 +94,5 @@ class _Options:
         self.config = config
 
 
-def get(**kwargs):
+def get(**kwargs: "Unpack[_PGCloneOptions]") -> _Options:
     return _Options(**kwargs)

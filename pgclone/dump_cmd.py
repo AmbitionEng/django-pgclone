@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import datetime as dt
 import os
 import re
-from typing import List, Union
 
 from django.apps import apps
 
@@ -10,16 +11,24 @@ from pgclone import db, exceptions, logging, options, run, settings, storage
 DT_FORMAT = "%Y-%m-%d-%H-%M-%S-%f"
 
 
-def _dump_key(*, instance, database, config):
+def _dump_key(*, instance: str, database: str, config: str) -> str:
     """Obtain the key for the db dump"""
-    now = dt.datetime.utcnow().strftime(DT_FORMAT)
+    now = dt.datetime.now(dt.timezone.utc).strftime(DT_FORMAT)
     instance = re.sub(r"[^a-zA-Z0-9_-]", "_", instance)
     database = re.sub(r"[^a-zA-Z0-9_-]", "_", database)
     config_name = re.sub(r"[^a-zA-Z0-9_-]", "_", config)
     return os.path.join(instance, database, config_name, f"{now}.dump")
 
 
-def _dump(*, exclude, config, pre_dump_hooks, instance, database, storage_location):
+def _dump(
+    *,
+    exclude: list[str],
+    config: str,
+    pre_dump_hooks: list[str],
+    instance: str,
+    database: str,
+    storage_location: str,
+) -> str:
     """Dump implementation"""
     if not settings.allow_dump():  # pragma: no cover
         raise exceptions.RuntimeError("Dump not allowed.")
@@ -59,12 +68,12 @@ def _dump(*, exclude, config, pre_dump_hooks, instance, database, storage_locati
 
 def dump(
     *,
-    exclude: Union[List[str], None] = None,
-    pre_dump_hooks: Union[List[str], None] = None,
-    instance: Union[str, None] = None,
-    database: Union[str, None] = None,
-    storage_location: Union[str, None] = None,
-    config: Union[str, None] = None,
+    exclude: list[str] | None = None,
+    pre_dump_hooks: list[str] | None = None,
+    instance: str | None = None,
+    database: str | None = None,
+    storage_location: str | None = None,
+    config: str | None = None,
 ) -> str:
     """Dumps a database.
 

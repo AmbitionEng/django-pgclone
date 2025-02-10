@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -12,7 +13,7 @@ class Subcommands(BaseCommand):
     because of installation issues
     """
 
-    argv = []
+    argv: list[str] = []
     subcommands = {}
 
     def add_arguments(self, parser):
@@ -46,11 +47,11 @@ class Subcommands(BaseCommand):
 
 
 class BaseSubcommand(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> Any:
         try:
             logger = logging.new_stdout_logger()
             with logging.set_logger(logger):
-                return self.subhandle(*args, **options)
+                return self.subhandle(*args, **options)  # type: ignore - missing from stubs
         except exceptions.Error as exc:
             self.stderr.write(str(exc))
             sys.exit(1)

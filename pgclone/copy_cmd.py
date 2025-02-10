@@ -1,9 +1,9 @@
-from typing import Union
+from __future__ import annotations
 
 from pgclone import db, exceptions, logging, options, settings
 
 
-def _copy(*, dump_key, database):
+def _copy(*, dump_key: str, database: str) -> str:
     """
     Copy implementation
     """
@@ -35,9 +35,7 @@ def _copy(*, dump_key, database):
     return dump_key
 
 
-def copy(
-    dump_key: str, *, database: Union[str, None] = None, config: Union[str, None] = None
-) -> str:
+def copy(dump_key: str, *, database: str | None = None, config: str | None = None) -> str:
     """
     Copies a database using `CREATE DATABASE <dump_key> TEMPLATE <database>`.
 
@@ -60,4 +58,4 @@ def copy(
         database=database,
     )
 
-    return _copy(dump_key=opts.dump_key, database=opts.database)
+    return _copy(dump_key=opts.dump_key, database=opts.database)  # type: ignore - TODO address

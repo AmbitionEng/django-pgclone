@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import os
-from typing import List, Union
+from typing import Any
 
 from django.db import connections
 
 from pgclone import db, exceptions, logging, ls_cmd, options, run, settings, storage
 
 
-def _db_exists(database, *, using):
+def _db_exists(database: dict[str, Any], *, using: str) -> bool:
     """Returns True if the database exists"""
     conn_db_url = db.url(db.conn(using=using))
     try:
@@ -16,7 +18,7 @@ def _db_exists(database, *, using):
         return False
 
 
-def _set_search_path(database, *, using):
+def _set_search_path(database: dict[str, Any], *, using: str) -> None:
     """
     pg_restore does not restore the original search_path variable of the
     database, which can cause issues with extensions. This function obtains
@@ -27,13 +29,23 @@ def _set_search_path(database, *, using):
     """
     with connections[using].cursor() as cursor:
         cursor.execute("SHOW search_path;")
-        search_path = cursor.fetchone()[0]
+        search_path = cursor.fetchone()
+        if search_path is None:
+            raise AssertionError
+        search_path = search_path[0]
 
     set_search_path_sql = f'ALTER DATABASE "{database["NAME"]}" SET search_path to {search_path}'
     db.psql(set_search_path_sql, using=using)
 
 
-def _local_restore(dump_key, *, temp_db, post_db, pre_db, using):
+def _local_restore(
+    dump_key: str,
+    *,
+    temp_db: dict[str, Any],
+    post_db: dict[str, Any],
+    pre_db: dict[str, Any],
+    using: str,
+) -> str:
     """
     Performs a restore using a local database
     """
@@ -65,7 +77,13 @@ def _local_restore(dump_key, *, temp_db, post_db, pre_db, using):
     return dump_key
 
 
-def _remote_restore(dump_key, *, temp_db, using, storage_location):
+def _remote_restore(
+    dump_key: str,
+    *,
+    temp_db: dict[str, Any],
+    using: str,
+    storage_location: str,
+) -> str:
     storage_client = storage.client(storage_location)
 
     # We are restoring from a remote dump. If the dump key is not valid,
@@ -103,7 +121,15 @@ def _remote_restore(dump_key, *, temp_db, using, storage_location):
     return dump_key
 
 
-def _restore(*, dump_key, pre_swap_hooks, config, reversible, database, storage_location):
+def _restore(
+    *,
+    dump_key: str | None,
+    pre_swap_hooks: list[str],
+    config: str,
+    reversible: bool,
+    database: str,
+    storage_location: str,
+) -> str:
     """
     Restore implementation
     """
@@ -201,13 +227,13 @@ def _restore(*, dump_key, pre_swap_hooks, config, reversible, database, storage_
 
 
 def restore(
-    dump_key: Union[str, None] = None,
+    dump_key: str | None = None,
     *,
-    pre_swap_hooks: Union[List[str], None] = None,
-    reversible: Union[bool, None] = None,
-    database: Union[str, None] = None,
-    storage_location: Union[str, None] = None,
-    config: Union[str, None] = None,
+    pre_swap_hooks: list[str] | None = None,
+    reversible: bool | None = None,
+    database: str | None = None,
+    storage_location: str | None = None,
+    config: str | None = None,
 ) -> str:
     """
     Restores a database dump.
