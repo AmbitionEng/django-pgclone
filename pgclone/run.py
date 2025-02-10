@@ -36,7 +36,7 @@ def shell(
     is raised if it fails.
     """
     if pipefail and _is_pipefail_supported():  # pragma: no cover
-        cmd = [f"set -o pipefail; {cmd}"]
+        cmd = f"set -o pipefail; {cmd}"
 
     env = env or {}
     logger = logging.get_logger()
