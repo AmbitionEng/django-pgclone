@@ -11,7 +11,7 @@ from pgclone import exceptions, logging
 
 def _is_pipefail_supported() -> bool:
     """Check if the current shell supports pipefail."""
-    if sys.platform == "win32":
+    if sys.platform == "win32":  # pragma: no cover
         return False
 
     try:
