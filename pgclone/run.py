@@ -5,6 +5,7 @@ import io
 import os
 import subprocess
 import sys
+from typing import Any
 
 from django.core.management import call_command
 
