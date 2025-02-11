@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.7.0 (2025-02-11)
+
+#### Changes
+
+  - Add type safety by [@max-muoto](https://github.com/max-muoto) in [#37](https://github.com/AmbitionEng/django-pgclone/pull/37).
+  - Avoid hidden failures when dumping by [@max-muoto](https://github.com/max-muoto) in [#38](https://github.com/AmbitionEng/django-pgclone/pull/38).
+
 ## 3.6.1 (2024-12-15)
 
 #### Changes
