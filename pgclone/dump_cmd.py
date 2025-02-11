@@ -51,7 +51,7 @@ def _dump(
         [f"--exclude-table-data={table_name}" for table_name in exclude_tables]
     )
     # Note - do note format {db_dump_url} with an `f` string.
-    # It will be formatted later when running the command
+    # It will be formatted later when running the command.
     pg_dump_cmd_fmt = "pg_dump -Fc --no-acl --no-owner {db_dump_url} " + exclude_args
     pg_dump_cmd_fmt += " " + storage_client.pg_dump(file_path)
 
@@ -59,7 +59,7 @@ def _dump(
     logging.success_msg(f"Creating DB copy with cmd: {anon_pg_dump_cmd}")
 
     pg_dump_cmd = pg_dump_cmd_fmt.format(db_dump_url=db.url(dump_db))
-    run.shell(pg_dump_cmd, env=storage_client.env)
+    run.shell(pg_dump_cmd, env=storage_client.env, pipefail=True)
 
     logging.success_msg(f'Database "{database}" successfully dumped to "{dump_key}"')
 

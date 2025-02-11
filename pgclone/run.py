@@ -4,6 +4,7 @@ import contextlib
 import io
 import os
 import subprocess
+import sys
 from typing import Any
 
 from django.core.management import call_command
@@ -11,15 +12,32 @@ from django.core.management import call_command
 from pgclone import exceptions, logging
 
 
+def _is_pipefail_supported() -> bool:
+    """Check if the current shell supports pipefail."""
+    if sys.platform == "win32":  # pragma: no cover
+        return False
+
+    try:
+        current_shell = os.environ.get("SHELL", "/bin/sh")
+        subprocess.check_call([current_shell, "-c", "set -o pipefail"], stderr=subprocess.DEVNULL)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
 def shell(
     cmd: str,
     ignore_errors: bool = False,
     env: dict[str, Any] | None = None,
+    pipefail: bool = False,
 ) -> subprocess.Popen:
     """
     Utility for running a command. Ensures that an error
     is raised if it fails.
     """
+    if pipefail and _is_pipefail_supported():  # pragma: no cover
+        cmd = f"set -o pipefail; {cmd}"
+
     env = env or {}
     logger = logging.get_logger()
     process = subprocess.Popen(
