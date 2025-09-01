@@ -35,8 +35,13 @@ def shell(
     Utility for running a command. Ensures that an error
     is raised if it fails.
     """
+    executable: str | None = None
     if pipefail and _is_pipefail_supported():  # pragma: no cover
         cmd = f"set -o pipefail; {cmd}"
+        # If requested and supported by the user's shell, enable pipefail and
+        # execute using that shell rather than the system default /bin/sh to 
+        # ensure the pipefail is supported.
+        executable = os.environ.get("SHELL", "/bin/sh")
 
     env = env or {}
     logger = logging.get_logger()
@@ -45,6 +50,7 @@ def shell(
         shell=True,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
+        executable=executable,
         env=dict(os.environ, **{k: v for k, v in env.items() if v is not None}),
     )
     readline = process.stdout.readline if process.stdout else (lambda: b"")  # pragma: no branch
