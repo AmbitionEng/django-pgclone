@@ -39,7 +39,7 @@ def shell(
     if pipefail and _is_pipefail_supported():  # pragma: no cover
         cmd = f"set -o pipefail; {cmd}"
         # If requested and supported by the user's shell, enable pipefail and
-        # execute using that shell rather than the system default /bin/sh to 
+        # execute using that shell rather than the system default /bin/sh to
         # ensure the pipefail is supported.
         executable = os.environ.get("SHELL", "/bin/sh")
 
