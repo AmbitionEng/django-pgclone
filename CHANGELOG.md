@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.7.1 (2025-09-02)
+
+#### Fixes
+
+  - Use proper `SHELL` variable when running pgclone commands by [@max-muoto](https://github.com/max-muoto) in [#41](https://github.com/AmbitionEng/django-pgclone/pull/41).
+
 ## 3.7.0 (2025-02-11)
 
 #### Changes
