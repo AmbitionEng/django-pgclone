@@ -105,8 +105,7 @@ class DumpCommand(BaseSubcommand):
             nargs="*",
             dest="pre_dump_hooks",
             help=(
-                "Management command(s) that will be executed on"
-                " the database before it is dumped."
+                "Management command(s) that will be executed on the database before it is dumped."
             ),
         )
         parser.add_argument("-i", "--instance", help="Use this instance name in the dump key.")

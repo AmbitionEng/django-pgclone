@@ -12,7 +12,7 @@ def _db_exists(database: dict[str, Any], *, using: str) -> bool:
     """Returns True if the database exists"""
     conn_db_url = db.url(db.conn(using=using))
     try:
-        run.shell(f'psql {conn_db_url} -lqt | cut -d \\| -f 1 | grep -qw {database["NAME"]}')
+        run.shell(f"psql {conn_db_url} -lqt | cut -d \\| -f 1 | grep -qw {database['NAME']}")
         return True
     except RuntimeError:
         return False
